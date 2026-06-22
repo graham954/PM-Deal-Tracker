@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Local scrape source material (large, not needed in repo)
+screenshots/
+
+# Backup of the old screenshot-based dataset
+deals.backup-screenshots.json

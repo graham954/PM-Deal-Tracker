@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      width: 300px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1d252c;
+      background: #fff;
+    }
+    header {
+      background: #0046be;
+      color: #fff;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tag {
+      background: #fff200; color: #1d252c; font-weight: 800;
+      font-size: 10px; padding: 3px 6px; border-radius: 4px; text-transform: uppercase;
+    }
+    header h1 { font-size: 14px; margin: 0; font-weight: 700; }
+    .body { padding: 14px; }
+    label { font-size: 12px; color: #5f6b76; display: block; margin-bottom: 4px; }
+    input[type="number"] {
+      width: 60px; padding: 6px 8px; border: 1px solid #e3e8ee; border-radius: 6px; font-size: 13px;
+    }
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    button {
+      font-size: 13px; font-weight: 700; padding: 10px 12px; border-radius: 8px;
+      border: none; cursor: pointer; width: 100%;
+    }
+    .primary { background: #0046be; color: #fff; }
+    .primary:hover { background: #003494; }
+    .ghost { background: #f1f3f6; color: #1d252c; margin-top: 8px; }
+    .danger { background: #fff; color: #c00; border: 1px solid #f0c2c2; margin-top: 8px; }
+    .status {
+      margin-top: 12px; font-size: 12px; line-height: 1.5; color: #1d252c;
+      background: #f5f7fa; border-radius: 8px; padding: 10px;
+    }
+    .status b { color: #0046be; }
+    .muted { color: #5f6b76; font-size: 11px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="tag">My Best Buy+</span>
+    <h1>Member Deals Scraper</h1>
+  </header>
+  <div class="body">
+    <div class="row">
+      <label for="maxPages" style="margin:0;">Max pages</label>
+      <input type="number" id="maxPages" value="20" min="1" max="50" />
+    </div>
+    <button class="primary" id="start">Scan all pages</button>
+    <button class="ghost" id="download">Download collected JSON</button>
+    <button class="danger" id="stop">Stop / reset</button>
+    <div class="status" id="status">Idle.</div>
+    <div class="muted">
+      Open the member deals list (page 1), set your store to <b>Lexington</b>, then click
+      “Scan all pages.” It will page through automatically and download <b>deals.json</b>.
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Best Buy+ Member Deals — Search</title>
+  <style>
+    :root {
+      --bb-blue: #0046be;
+      --bb-blue-dark: #003494;
+      --bb-yellow: #fff200;
+      --bb-black: #1d252c;
+      --ink: #1d252c;
+      --muted: #5f6b76;
+      --line: #e3e8ee;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --save: #00875a;
+      --save-bg: #e6f4ee;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(29,37,44,.08), 0 8px 24px rgba(29,37,44,.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    header {
+      background: var(--bb-blue);
+      color: #fff;
+      padding: 18px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 10px rgba(0,70,190,.25);
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      background: var(--bb-yellow);
+      color: var(--bb-black);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: .5px;
+      padding: 5px 9px;
+      border-radius: 5px;
+      text-transform: uppercase;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .updated {
+      margin-left: auto;
+      font-size: 13px;
+      opacity: .9;
+      white-space: nowrap;
+    }
+
+    /* Controls */
+    .controls {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px 20px 6px;
+    }
+    .search-wrap { position: relative; }
+    .search-wrap svg {
+      position: absolute;
+      left: 16px; top: 50%;
+      transform: translateY(-50%);
+      width: 20px; height: 20px;
+      color: var(--muted);
+    }
+    #search {
+      width: 100%;
+      padding: 16px 16px 16px 46px;
+      font-size: 17px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    #search:focus {
+      border-color: var(--bb-blue);
+      box-shadow: 0 0 0 4px rgba(0,70,190,.12);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .chip {
+      border: 2px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 9px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .chip:hover { border-color: var(--bb-blue); }
+    .chip.active {
+      background: var(--bb-blue);
+      border-color: var(--bb-blue);
+      color: #fff;
+    }
+    /* In-stock toggle — independent of category */
+    .chip.instock {
+      border-color: var(--save);
+      color: var(--save);
+    }
+    .chip.instock::before { content: "\2713  "; font-weight: 800; }
+    .chip.instock.active {
+      background: var(--save);
+      border-color: var(--save);
+      color: #fff;
+    }
+    .chip-divider {
+      width: 1px;
+      align-self: stretch;
+      background: var(--line);
+      margin: 2px 4px;
+    }
+    .count {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* Grid */
+    .grid {
+      max-width: 1100px;
+      margin: 14px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-cat {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: var(--bb-blue);
+    }
+    .card-name {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin: 0;
+      flex: 1;
+    }
+    .prices {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .member-price {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--bb-black);
+    }
+    .reg-price {
+      font-size: 15px;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+    .reg-label { font-size: 12px; color: var(--muted); }
+    .save-badge {
+      align-self: flex-start;
+      background: var(--save-bg);
+      color: var(--save);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 6px 11px;
+      border-radius: 8px;
+    }
+    .save-badge.pending {
+      background: #eef1f5;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .member-note {
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+    .member-note strong { color: var(--bb-blue); }
+    .pickup {
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pickup.in { color: var(--save); }
+    .pickup.out { color: var(--muted); font-weight: 500; }
+    .pickup .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: currentColor; flex: none;
+    }
+
+    /* Empty / loading */
+    .state {
+      max-width: 600px;
+      margin: 60px auto;
+      text-align: center;
+      color: var(--muted);
+      padding: 0 20px;
+    }
+    .state h2 { color: var(--ink); margin-bottom: 8px; }
+
+    @media (max-width: 560px) {
+      .title { font-size: 17px; }
+      .updated { width: 100%; margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <span class="tag">My Best Buy+</span>
+      <h1 class="title">Member Deals Search</h1>
+      <span class="updated" id="updated"></span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search" type="text" placeholder="Search deals — e.g. tv, laptop, headphones…" autocomplete="off" autofocus />
+    </div>
+    <div class="filters" id="filters"></div>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const CATEGORIES = ["All", "TVs", "Laptops & Computers", "Appliances", "Audio", "Other"];
+    let deals = [];
+    let activeCategory = "All";
+    let inStockOnly = false;
+    let query = "";
+
+    const grid = document.getElementById("grid");
+    const countEl = document.getElementById("count");
+    const updatedEl = document.getElementById("updated");
+    const filtersEl = document.getElementById("filters");
+    const searchEl = document.getElementById("search");
+
+    function money(n) {
+      return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderFilters() {
+      filtersEl.innerHTML = "";
+
+      // Independent "In stock" toggle (Lexington pickup or Charlotte Warehouse)
+      const stockBtn = document.createElement("button");
+      stockBtn.className = "chip instock" + (inStockOnly ? " active" : "");
+      stockBtn.textContent = "In stock";
+      stockBtn.title = "Available for pickup at Lexington (1 hr) or the Charlotte Warehouse";
+      stockBtn.onclick = () => { inStockOnly = !inStockOnly; renderFilters(); render(); };
+      filtersEl.appendChild(stockBtn);
+
+      const divider = document.createElement("span");
+      divider.className = "chip-divider";
+      filtersEl.appendChild(divider);
+
+      // Category chips (mutually exclusive)
+      CATEGORIES.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = "chip" + (cat === activeCategory ? " active" : "");
+        btn.textContent = cat;
+        btn.onclick = () => { activeCategory = cat; renderFilters(); render(); };
+        filtersEl.appendChild(btn);
+      });
+    }
+
+    function render() {
+      const q = query.trim().toLowerCase();
+      const filtered = deals.filter(d => {
+        const matchesCat = activeCategory === "All" || d.category === activeCategory;
+        const matchesStock = !inStockOnly || d.inStock === true;
+        const matchesQ = !q ||
+          (d.name && d.name.toLowerCase().includes(q)) ||
+          (d.category && d.category.toLowerCase().includes(q));
+        return matchesCat && matchesStock && matchesQ;
+      });
+
+      countEl.textContent = filtered.length
+        ? `${filtered.length} deal${filtered.length === 1 ? "" : "s"}`
+        : "";
+
+      if (!deals.length) {
+        grid.innerHTML = "";
+        grid.innerHTML = `<div class="state"><h2>No deal data loaded</h2><p>Run a scrape to populate <strong>deals.json</strong>, then redeploy.</p></div>`;
+        return;
+      }
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="state"><h2>No matching deals</h2><p>Try a different keyword or category.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(d => {
+        const hasSavings = typeof d.regularPrice === "number" && d.regularPrice > d.memberPrice
+          && typeof d.dollarSavings === "number";
+        return `
+        <div class="card">
+          <div class="card-cat">${escapeHtml(d.category || "")}</div>
+          <h3 class="card-name">${escapeHtml(d.name || "")}</h3>
+          <div class="prices">
+            <span class="member-price">${money(d.memberPrice)}</span>
+            ${hasSavings ? `<span class="reg-label">reg.</span><span class="reg-price">${money(d.regularPrice)}</span>` : ``}
+          </div>
+          ${hasSavings
+            ? `<span class="save-badge">Save ${money(d.dollarSavings)}${typeof d.percentSavings === "number" ? ` (${d.percentSavings}%)` : ``}</span>`
+            : `<span class="save-badge pending">Member price</span>`}
+          <div class="pickup ${d.inStock ? "in" : "out"}"><span class="dot"></span>${escapeHtml(d.pickup || (d.inStock ? "In stock" : "Not at Lexington"))}</div>
+          <div class="member-note">Member price with <strong>My Best Buy+</strong></div>
+        </div>
+      `;
+      }).join("");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function setUpdated() {
+      const dates = deals.map(d => d.lastUpdated).filter(Boolean).sort();
+      if (dates.length) {
+        const d = new Date(dates[dates.length - 1] + "T00:00:00");
+        updatedEl.textContent = "Updated " + d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      }
+    }
+
+    searchEl.addEventListener("input", e => { query = e.target.value; render(); });
+
+    async function load() {
+      renderFilters();
+      try {
+        const res = await fetch("deals.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("fetch failed");
+        deals = await res.json();
+        localStorage.setItem("bb_deals_cache", JSON.stringify(deals));
+      } catch (e) {
+        // Fallback to last cached copy if the network/file is unavailable
+        const cached = localStorage.getItem("bb_deals_cache");
+        if (cached) deals = JSON.parse(cached);
+      }
+      setUpdated();
+      render();
+    }
+
+    load();
+  </script>
+</body>
+</html>
