@@ -6,3 +6,6 @@ screenshots/
 
 # Backup of the old screenshot-based dataset
 deals.backup-screenshots.json
+
+# Local-only scraper extension (references the retailer domain; kept off the public repo)
+scraper-extension/

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Best Buy+ Member Deals — Search</title>
+  <title>Member Deals — Search</title>
   <style>
     :root {
       --bb-blue: #0046be;
@@ -218,8 +218,21 @@
       color: var(--muted);
       border-top: 1px dashed var(--line);
       padding-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
     .member-note strong { color: var(--bb-blue); }
+    .sku {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: var(--ink);
+      background: #eef1f5;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: .3px;
+    }
     .pickup {
       font-size: 12.5px;
       font-weight: 600;
@@ -253,8 +266,8 @@
 <body>
   <header>
     <div class="header-inner">
-      <span class="tag">My Best Buy+</span>
-      <h1 class="title">Member Deals Search</h1>
+      <span class="tag">Member Deals</span>
+      <h1 class="title">Deal Search</h1>
       <span class="updated" id="updated"></span>
     </div>
   </header>
@@ -262,7 +275,7 @@
   <div class="controls">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input id="search" type="text" placeholder="Search deals — e.g. tv, laptop, headphones…" autocomplete="off" autofocus />
+      <input id="search" type="text" placeholder="Search by name, category, or SKU — e.g. tv, laptop, 6526125…" autocomplete="off" autofocus />
     </div>
     <div class="filters" id="filters"></div>
   </div>
@@ -319,7 +332,8 @@
         const matchesStock = !inStockOnly || d.inStock === true;
         const matchesQ = !q ||
           (d.name && d.name.toLowerCase().includes(q)) ||
-          (d.category && d.category.toLowerCase().includes(q));
+          (d.category && d.category.toLowerCase().includes(q)) ||
+          (d.id && d.id.toLowerCase().replace(/^sku-/, "").includes(q.replace(/^sku[-\s]?/, "")));
         return matchesCat && matchesStock && matchesQ;
       });
 
@@ -340,6 +354,7 @@
       grid.innerHTML = filtered.map(d => {
         const hasSavings = typeof d.regularPrice === "number" && d.regularPrice > d.memberPrice
           && typeof d.dollarSavings === "number";
+        const sku = /^sku-\d+$/.test(d.id || "") ? d.id.replace(/^sku-/, "") : "";
         return `
         <div class="card">
           <div class="card-cat">${escapeHtml(d.category || "")}</div>
@@ -352,7 +367,7 @@
             ? `<span class="save-badge">Save ${money(d.dollarSavings)}${typeof d.percentSavings === "number" ? ` (${d.percentSavings}%)` : ``}</span>`
             : `<span class="save-badge pending">Member price</span>`}
           <div class="pickup ${d.inStock ? "in" : "out"}"><span class="dot"></span>${escapeHtml(d.pickup || (d.inStock ? "In stock" : "Not at Lexington"))}</div>
-          <div class="member-note">Member price with <strong>My Best Buy+</strong></div>
+          <div class="member-note">${sku ? `<span class="sku">SKU ${escapeHtml(sku)}</span>` : ``}<span>Member-exclusive price</span></div>
         </div>
       `;
       }).join("");
