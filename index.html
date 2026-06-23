@@ -142,6 +142,27 @@
       flex-wrap: wrap;
       margin-top: 14px;
     }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .filter-row .filters { margin-top: 0; flex: 1 1 auto; }
+    .sort {
+      margin-left: auto;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      outline: none;
+    }
+    .sort:focus { border-color: var(--accent); }
     .chip {
       border: 2px solid var(--line);
       background: var(--card);
@@ -314,7 +335,16 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input id="search" type="text" placeholder="Search by name, category, or SKU — e.g. tv, laptop, 6526125…" autocomplete="off" autofocus />
     </div>
-    <div class="filters" id="filters"></div>
+    <div class="filter-row">
+      <div class="filters" id="filters"></div>
+      <select id="sort" class="sort" title="Sort deals" aria-label="Sort deals">
+        <option value="relevance">Sort: Featured</option>
+        <option value="save">Biggest $ savings</option>
+        <option value="percent">Biggest % savings</option>
+        <option value="priceLow">Price: low to high</option>
+        <option value="priceHigh">Price: high to low</option>
+      </select>
+    </div>
   </div>
 
   <div class="count" id="count"></div>
@@ -326,15 +356,39 @@
     let activeCategory = "All";
     let inStockOnly = false;
     let query = "";
+    let sortBy = "relevance";
 
     const grid = document.getElementById("grid");
     const countEl = document.getElementById("count");
     const updatedEl = document.getElementById("updated");
     const filtersEl = document.getElementById("filters");
     const searchEl = document.getElementById("search");
+    const sortEl = document.getElementById("sort");
 
     function money(n) {
       return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+    // searchable text for a deal: name + category + SKU digits
+    function haystack(d) {
+      return ((d.name || "") + " " + (d.category || "") + " " + (d.id || "").replace(/^sku-/, "")).toLowerCase();
+    }
+
+    // relevance score: word-start and name-prefix matches rank higher than loose substrings
+    function relevance(d, tokens) {
+      const name = (d.name || "").toLowerCase();
+      const hay = haystack(d);
+      let s = 0;
+      for (const t of tokens) {
+        if (!hay.includes(t)) continue;
+        s += 2;
+        if (new RegExp("\\b" + escapeRe(t)).test(hay)) s += 4;
+        if (name.startsWith(t)) s += 3;
+      }
+      if (tokens.length && name.startsWith(tokens.join(" "))) s += 8;
+      return s;
     }
 
     function renderFilters() {
@@ -363,16 +417,24 @@
     }
 
     function render() {
-      const q = query.trim().toLowerCase();
+      // tokenize the query — every word must appear somewhere (any order, case-insensitive)
+      const q = query.trim().toLowerCase().replace(/^sku[-\s]?/, "");
+      const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
       const filtered = deals.filter(d => {
         const matchesCat = activeCategory === "All" || d.category === activeCategory;
         const matchesStock = !inStockOnly || d.inStock === true;
-        const matchesQ = !q ||
-          (d.name && d.name.toLowerCase().includes(q)) ||
-          (d.category && d.category.toLowerCase().includes(q)) ||
-          (d.id && d.id.toLowerCase().replace(/^sku-/, "").includes(q.replace(/^sku[-\s]?/, "")));
+        const hay = haystack(d);
+        const matchesQ = tokens.length === 0 || tokens.every(t => hay.includes(t));
         return matchesCat && matchesStock && matchesQ;
       });
+
+      // sorting
+      const num = v => (typeof v === "number" ? v : -Infinity);
+      if (sortBy === "save") filtered.sort((a, b) => num(b.dollarSavings) - num(a.dollarSavings));
+      else if (sortBy === "percent") filtered.sort((a, b) => num(b.percentSavings) - num(a.percentSavings));
+      else if (sortBy === "priceLow") filtered.sort((a, b) => a.memberPrice - b.memberPrice);
+      else if (sortBy === "priceHigh") filtered.sort((a, b) => b.memberPrice - a.memberPrice);
+      else if (tokens.length) filtered.sort((a, b) => relevance(b, tokens) - relevance(a, tokens));
 
       countEl.textContent = filtered.length
         ? `${filtered.length} deal${filtered.length === 1 ? "" : "s"}`
@@ -423,6 +485,7 @@
     }
 
     searchEl.addEventListener("input", e => { query = e.target.value; render(); });
+    sortEl.addEventListener("change", () => { sortBy = sortEl.value; render(); });
 
     // dark mode toggle (initial theme already applied by the head script)
     const themeToggleEl = document.getElementById("themeToggle");
