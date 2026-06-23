@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Member Deals Scraper",
+  "version": "1.0",
+  "description": "Scans every page of the member deals list and exports them as deals.json for the Member Deals Search tool.",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": ["https://www.bestbuy.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Member Deals Scraper"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.bestbuy.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
