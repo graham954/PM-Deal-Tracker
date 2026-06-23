@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Member Deals — Search</title>
+  <script>
+    // set theme before paint to avoid a flash
+    (function () {
+      try {
+        var t = localStorage.getItem("bb_theme") ||
+          (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <style>
     :root {
       --bb-blue: #0046be;
@@ -17,8 +27,23 @@
       --card: #ffffff;
       --save: #00875a;
       --save-bg: #e6f4ee;
+      --subtle: #eef1f5;
+      --accent: #0046be;
       --radius: 14px;
       --shadow: 0 1px 3px rgba(29,37,44,.08), 0 8px 24px rgba(29,37,44,.06);
+    }
+
+    :root[data-theme="dark"] {
+      --ink: #e7ecf2;
+      --muted: #9aa6b2;
+      --line: #2b333d;
+      --bg: #11161c;
+      --card: #1b222b;
+      --save: #34d399;
+      --save-bg: #123227;
+      --subtle: #232c36;
+      --accent: #6ea8ff;
+      --shadow: 0 1px 3px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.45);
     }
 
     * { box-sizing: border-box; }
@@ -70,6 +95,16 @@
       opacity: .9;
       white-space: nowrap;
     }
+    .theme-toggle {
+      margin-left: 12px;
+      width: 36px; height: 36px;
+      border: none; border-radius: 9px;
+      background: rgba(255,255,255,.16);
+      color: #fff; cursor: pointer;
+      font-size: 17px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,.3); }
 
     /* Controls */
     .controls {
@@ -91,7 +126,8 @@
       font-size: 17px;
       border: 2px solid var(--line);
       border-radius: var(--radius);
-      background: #fff;
+      background: var(--card);
+      color: var(--ink);
       outline: none;
       transition: border-color .15s, box-shadow .15s;
     }
@@ -108,7 +144,7 @@
     }
     .chip {
       border: 2px solid var(--line);
-      background: #fff;
+      background: var(--card);
       color: var(--ink);
       font-size: 14px;
       font-weight: 600;
@@ -173,7 +209,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .4px;
-      color: var(--bb-blue);
+      color: var(--accent);
     }
     .card-name {
       font-size: 16px;
@@ -191,7 +227,7 @@
     .member-price {
       font-size: 24px;
       font-weight: 800;
-      color: var(--bb-black);
+      color: var(--ink);
     }
     .reg-price {
       font-size: 15px;
@@ -209,7 +245,7 @@
       border-radius: 8px;
     }
     .save-badge.pending {
-      background: #eef1f5;
+      background: var(--subtle);
       color: var(--muted);
       font-weight: 600;
     }
@@ -228,7 +264,7 @@
       font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--ink);
-      background: #eef1f5;
+      background: var(--subtle);
       padding: 2px 7px;
       border-radius: 5px;
       letter-spacing: .3px;
@@ -269,6 +305,7 @@
       <span class="tag">Member Deals</span>
       <h1 class="title">Deal Search</h1>
       <span class="updated" id="updated"></span>
+      <button class="theme-toggle" id="themeToggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
     </div>
   </header>
 
@@ -386,6 +423,21 @@
     }
 
     searchEl.addEventListener("input", e => { query = e.target.value; render(); });
+
+    // dark mode toggle (initial theme already applied by the head script)
+    const themeToggleEl = document.getElementById("themeToggle");
+    function syncThemeIcon() {
+      const dark = document.documentElement.getAttribute("data-theme") === "dark";
+      themeToggleEl.textContent = dark ? "☀️" : "🌙";
+      themeToggleEl.setAttribute("aria-pressed", String(dark));
+    }
+    syncThemeIcon();
+    themeToggleEl.addEventListener("click", () => {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("bb_theme", next); } catch (e) {}
+      syncThemeIcon();
+    });
 
     async function load() {
       renderFilters();
